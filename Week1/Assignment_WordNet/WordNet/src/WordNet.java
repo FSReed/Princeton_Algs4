@@ -8,9 +8,9 @@ import java.util.HashSet;
 
 public class WordNet{
 
-    private Digraph G;
-    private RedBlackBST<Integer, String[]> wordID;
-    private HashSet<String> nounSet;
+    private final Digraph G;
+    private final RedBlackBST<Integer, String[]> wordID;
+    private final HashSet<String> nounSet;
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
         if (synsets == null || hypernyms == null) {
@@ -47,12 +47,12 @@ public class WordNet{
 
     // returns all WordNet nouns
     public Iterable<String> nouns() {
-        return null;
+        return nounSet;
     }
 
-    // is the word a WrodNet noun?
+    // is the word a WordNet noun?
     public boolean isNoun(String word) {
-        return false;
+        return nounSet.contains(word);
     }
 
     // distance between nounA and nounB
@@ -70,5 +70,7 @@ public class WordNet{
 
     public static void main(String[] args) {
         WordNet newOne = new WordNet("synsets.txt", "hypernyms.txt");
+        Iterable<String> target = newOne.nouns();
+        System.out.println(newOne.isNoun("reed"));
     }
 }
