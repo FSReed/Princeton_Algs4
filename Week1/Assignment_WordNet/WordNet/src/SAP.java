@@ -33,62 +33,59 @@ public class SAP {
 
     // length of shortest ancestral path between v and w; -1 if no such path.
     public int length(int v, int w) {
-        if (v < 0 || v >= G.V() || w < 0 || w >= G.V()) throw new IllegalArgumentException("Index out of bounds");
-        Queue<Integer> vQueue = new Queue<>();
-        Queue<Integer> wQueue = new Queue<>();
-        initializeArray();
-        vdistTo[v] = 0;
-        wdistTo[w] = 0;
-        vMarked[v] = true;
-        wMarked[w] = true;
-        vQueue.enqueue(v);
-        wQueue.enqueue(w);
-        int vTemp = -1;
-        int wTemp = -1;
-        int length = Integer.MAX_VALUE;
-
-        while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
-            if (!vQueue.isEmpty()) {
-                vTemp = vQueue.dequeue();
-                for (Integer vAdj : G.adj(vTemp)) {
-                    if (!vMarked[vAdj]) {
-                        vQueue.enqueue(vAdj);
-                        vMarked[vAdj] = true;
-                        vdistTo[vAdj] = vdistTo[vTemp] + 1;
-                    }
-                }
-            }
-            if (!wQueue.isEmpty()) {
-                wTemp = wQueue.dequeue();
-                for (Integer wAdj : G.adj(wTemp)) {
-                    if (!wMarked[wAdj]) {
-                        wQueue.enqueue(wAdj);
-                        wMarked[wAdj] = true;
-                        wdistTo[wAdj] = wdistTo[wTemp] + 1;
-                    }
-                }
-            }
-            int tmpL;
-            if (wMarked[vTemp]) {
-                tmpL = vdistTo[vTemp] + wdistTo[vTemp];
-                if (tmpL < length) {
-                    length = tmpL;
-                }
-            }
-            if (vMarked[wTemp]) {
-                tmpL = vdistTo[wTemp] + wdistTo[wTemp];
-                if (tmpL < length) {
-                    length = tmpL;
-                }
-            }
-        }
-        return length;
+        int[] result = new int[2];
+        SAPHelper(v, w, result);
+        return result[0];
     }
 
     /* a common ancestor of v and w that participates in a shortest ancestral path;
      * -1 if no such path
      */
     public int ancestor(int v, int w) {
+        int[] result = new int[2];
+        SAPHelper(v, w, result);
+        return result[1];
+    }
+
+    /* length of shortest ancestral path between any vertex in v and any vertex in w;
+     * -1 if no such path
+     */
+    public int length(Iterable<Integer> v, Iterable<Integer> w) {
+        int length = Integer.MAX_VALUE;
+        int[] result = new int[2];
+        for (Integer vnode : v) {
+            for (Integer wnode : w) {
+                SAPHelper(vnode, wnode, result);
+                if (result[0] < length) {
+                    length = result[0];
+                }
+            }
+        }
+        return length;
+    }
+
+    /* a common ancestor that participates in shortest ancestral path;
+     * -1 if no such path
+     */
+    public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
+        int length = Integer.MAX_VALUE;
+        int ances = G.V();
+        int[] result = new int[2];
+
+        for (Integer vnode : v) {
+            for (Integer wnode : w) {
+                SAPHelper(vnode, wnode, result);
+                if (result[0] < length) {
+                    length = result[0];
+                    ances = result[1];
+                }
+            }
+        }
+        return ances;
+    }
+
+    private void SAPHelper(int v, int w, int[] result) {
+        if (result.length != 2) throw new RuntimeException("I only need integer array with 2 elements.");
         if (v < 0 || v >= G.V() || w < 0 || w >= G.V()) throw new IllegalArgumentException("Index out of bounds");
         Queue<Integer> vQueue = new Queue<>();
         Queue<Integer> wQueue = new Queue<>();
@@ -141,42 +138,8 @@ public class SAP {
                 }
             }
         }
-        return ances;
-    }
-
-    /* length of shortest ancestral path between any vertex in v and any vertex in w;
-     * -1 if no such path
-     */
-    public int length(Iterable<Integer> v, Iterable<Integer> w) {
-        int length = Integer.MAX_VALUE;
-        for (Integer vnode : v) {
-            for (Integer wnode : w) {
-                int tmpL = length(vnode, wnode);
-                if (tmpL < length) {
-                    length = tmpL;
-                }
-            }
-        }
-        return length;
-    }
-
-    /* a common ancestor that participates in shortest ancestral path;
-     * -1 if no such path
-     */
-    public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-        int length = Integer.MAX_VALUE;
-        int ances = G.V();
-
-        for (Integer vnode : v) {
-            for (Integer wnode : w) {
-                int tmpL = length(vnode, wnode);
-                if (tmpL < length) {
-                    length = tmpL;
-                    ances = ancestor(vnode, wnode);
-                }
-            }
-        }
-        return ances;
+        result[0] = length;
+        result[1] = ances;
     }
 
     // do unit testing of this class
