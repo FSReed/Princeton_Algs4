@@ -83,8 +83,8 @@ public class WordNet{
     }
 
     public static void main(String[] args) {
-        WordNet newOne = new WordNet("synsets.txt", "hypernyms.txt");
-        Iterable<String> target = newOne.nouns();
-        System.out.println(newOne.isNoun("reed"));
+        WordNet wordnet = new WordNet("synsets.txt", "hypernyms.txt");
+        int length = wordnet.distance("horse", "cat");
+        System.out.println(length);
     }
 }
