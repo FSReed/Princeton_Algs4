@@ -86,7 +86,8 @@ public class SAP {
 
     private void SAPHelper(int v, int w, int[] result) {
         if (result.length != 2) throw new RuntimeException("I only need integer array with 2 elements.");
-        if (v < 0 || v >= G.V() || w < 0 || w >= G.V()) throw new IllegalArgumentException("Index out of bounds");
+        if (v < 0 || v >= G.V() || w < 0 || w >= G.V())
+            throw new IllegalArgumentException("Index out of bounds");
         Queue<Integer> vQueue = new Queue<>();
         Queue<Integer> wQueue = new Queue<>();
         initializeArray();
