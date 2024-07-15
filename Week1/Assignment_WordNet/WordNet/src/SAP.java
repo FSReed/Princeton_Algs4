@@ -39,6 +39,8 @@ public class SAP {
         initializeArray();
         vdistTo[v] = 0;
         wdistTo[w] = 0;
+        vMarked[v] = true;
+        wMarked[w] = true;
         vQueue.enqueue(v);
         wQueue.enqueue(w);
         int vTemp = -1;
@@ -70,12 +72,14 @@ public class SAP {
             if (wMarked[vTemp]) {
                 tmpL = vdistTo[vTemp] + wdistTo[vTemp];
                 if (tmpL < length) {
+                    StdOut.printf("Get to %d is shorter than %d\n", vTemp, length);
                     length = tmpL;
                 }
             }
             if (vMarked[wTemp]) {
                 tmpL = vdistTo[wTemp] + wdistTo[wTemp];
                 if (tmpL < length) {
+                    StdOut.printf("Get to %d is shorter than %d\n", wTemp, length);
                     length = tmpL;
                 }
             }
@@ -93,6 +97,8 @@ public class SAP {
         initializeArray();
         vdistTo[v] = 0;
         wdistTo[w] = 0;
+        vMarked[v] = true;
+        wMarked[w] = true;
         vQueue.enqueue(v);
         wQueue.enqueue(w);
         int vTemp = -1;
