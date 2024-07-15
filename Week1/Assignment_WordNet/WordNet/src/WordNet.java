@@ -11,6 +11,7 @@ public class WordNet{
     private final Digraph G;
     private final RedBlackBST<Integer, String[]> wordID;
     private final HashSet<String> nounSet;
+
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
         if (synsets == null || hypernyms == null) {
