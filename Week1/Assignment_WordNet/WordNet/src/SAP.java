@@ -68,7 +68,7 @@ public class SAP {
                     }
                 }
             }
-            int tmpL = Integer.MAX_VALUE;
+            int tmpL;
             if (wMarked[vTemp]) {
                 tmpL = vdistTo[vTemp] + wdistTo[vTemp];
                 if (tmpL < length) {
