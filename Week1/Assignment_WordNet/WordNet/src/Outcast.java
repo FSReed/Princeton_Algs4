@@ -16,8 +16,11 @@ public class Outcast {
         for (String noun : nouns) {
             length = 0;
             for (String anotherNoun : nouns) {
-                length += wordnet.distance(noun, anotherNoun);
+                int current = wordnet.distance(noun, anotherNoun);
+                length += current;
+                StdOut.printf("%s to %s: %d\n", noun, anotherNoun, current);
             }
+            StdOut.printf("Prev Max: %d. And now: %d\n", maxLength, length);
             if (length < maxLength) {
                 maxLength = length;
                 result = noun;
