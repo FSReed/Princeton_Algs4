@@ -72,14 +72,12 @@ public class SAP {
             if (wMarked[vTemp]) {
                 tmpL = vdistTo[vTemp] + wdistTo[vTemp];
                 if (tmpL < length) {
-                    StdOut.printf("Get to %d is shorter than %d\n", vTemp, length);
                     length = tmpL;
                 }
             }
             if (vMarked[wTemp]) {
                 tmpL = vdistTo[wTemp] + wdistTo[wTemp];
                 if (tmpL < length) {
-                    StdOut.printf("Get to %d is shorter than %d\n", wTemp, length);
                     length = tmpL;
                 }
             }
