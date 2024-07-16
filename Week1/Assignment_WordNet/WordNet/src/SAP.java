@@ -102,6 +102,8 @@ public class SAP {
         if (v == null || w == null)
             throw new IllegalArgumentException("Arguments can't be null");
         initializeWithArgument(v, w);
+        if (vQueue.isEmpty() || wQueue.isEmpty())
+            return -1;
         int[] result = new int[2];
         sapHelper(result);
         return result[0];
@@ -114,6 +116,8 @@ public class SAP {
         if (v == null || w == null)
             throw new IllegalArgumentException("Arguments can't be null");
         initializeWithArgument(v, w);
+        if (vQueue.isEmpty() || wQueue.isEmpty())
+            return -1;
         int[] result = new int[2];
         sapHelper(result);
         return result[1];
