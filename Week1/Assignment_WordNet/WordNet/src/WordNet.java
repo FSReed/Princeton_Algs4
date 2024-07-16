@@ -2,11 +2,11 @@ import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.RedBlackBST;
 import edu.princeton.cs.algs4.LinkedBag;
+import edu.princeton.cs.algs4.DirectedCycle;
 
+public class WordNet {
 
-public class WordNet{
-
-    private final Digraph G;
+    private final SAP sap;
     private final RedBlackBST<Integer, String> wordID;
     private final RedBlackBST<String, LinkedBag<Integer>> nounSet;
 
@@ -23,7 +23,7 @@ public class WordNet{
             String content = syn.readLine();
             String[] elements = content.split(",", 3);
             int id = Integer.parseInt(elements[0]);
-            wordID.put(verticeNum, elements[1]);
+            wordID.put(id, elements[1]);
             String[] nouns = elements[1].split(" ");
             LinkedBag<Integer> bag;
             for (String noun : nouns) {
@@ -39,18 +39,23 @@ public class WordNet{
         }
 
         /* Generate a new DiGraph */
-        G = new Digraph(verticeNum);
+        Digraph g = new Digraph(verticeNum);
 
         In hyp = new In(hypernyms);
         while (!hyp.isEmpty()) {
             String content = hyp.readLine();
             String[] element = content.split(",");
             int v = Integer.parseInt(element[0]);
-            for (int p = 1; p <element.length; p++) {
+            for (int p = 1; p < element.length; p++) {
                 int m = Integer.parseInt(element[p]);
-                G.addEdge(v, m);
+                g.addEdge(v, m);
             }
         }
+
+        DirectedCycle gcycle = new DirectedCycle(g);
+        if (gcycle.hasCycle())
+            throw new IllegalArgumentException("WordNet shouldn't have any cycle");
+        sap = new SAP(g);
     }
 
     // returns all WordNet nouns
@@ -67,7 +72,6 @@ public class WordNet{
     public int distance(String nounA, String nounB) {
         LinkedBag<Integer> vSet = nounSet.get(nounA);
         LinkedBag<Integer> wSet = nounSet.get(nounB);
-        SAP sap = new SAP(G);
         return sap.length(vSet, wSet);
     }
 
@@ -77,7 +81,6 @@ public class WordNet{
     public String sap(String nounA, String nounB) {
         LinkedBag<Integer> vSet = nounSet.get(nounA);
         LinkedBag<Integer> wSet = nounSet.get(nounB);
-        SAP sap = new SAP(G);
         int nodeNum = sap.ancestor(vSet, wSet);
         return wordID.get(nodeNum);
     }

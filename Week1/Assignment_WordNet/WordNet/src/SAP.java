@@ -13,6 +13,13 @@ public class SAP {
     private int[] vdistTo;
     private int[] wdistTo;
 
+    // constructor takes a digraph (not necessarily a DAG)
+    public SAP(Digraph G) {
+        if (G == null) throw new IllegalArgumentException("argument is null");
+        this.G = G;
+        initializeArray();
+    }
+
     private void initializeArray() {
         vMarked = new boolean[G.V()];
         wMarked = new boolean[G.V()];
@@ -24,17 +31,10 @@ public class SAP {
         }
     }
 
-    // constructor takes a digraph (not necessarily a DAG)
-    public SAP(Digraph G) {
-        if (G == null) throw new IllegalArgumentException("argument is null");
-        this.G = new Digraph(G);
-        initializeArray();
-    }
-
     // length of shortest ancestral path between v and w; -1 if no such path.
     public int length(int v, int w) {
         int[] result = new int[2];
-        SAPHelper(v, w, result);
+        sapHelper(v, w, result);
         return result[0];
     }
 
@@ -43,7 +43,7 @@ public class SAP {
      */
     public int ancestor(int v, int w) {
         int[] result = new int[2];
-        SAPHelper(v, w, result);
+        sapHelper(v, w, result);
         return result[1];
     }
 
@@ -51,12 +51,16 @@ public class SAP {
      * -1 if no such path
      */
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
-        int length = Integer.MAX_VALUE;
+        if (v == null || w == null)
+            throw new IllegalArgumentException("Arguments can't be null");
+        int length = -1;
         int[] result = new int[2];
-        for (Integer vnode : v) {
-            for (Integer wnode : w) {
-                SAPHelper(vnode, wnode, result);
-                if (result[0] < length) {
+        for (Integer vNode : v) {
+            for (Integer wNode : w) {
+                if (vNode == null || wNode == null)
+                    throw new IllegalArgumentException("Arguments can't be null");
+                sapHelper(vNode, wNode, result);
+                if (result[0] < length || length < 0) {
                     length = result[0];
                 }
             }
@@ -68,14 +72,18 @@ public class SAP {
      * -1 if no such path
      */
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-        int length = Integer.MAX_VALUE;
-        int ances = G.V();
+        if (v == null || w == null)
+            throw new IllegalArgumentException("Arguments can't be null");
+        int length = -1;
+        int ances = -1;
         int[] result = new int[2];
 
-        for (Integer vnode : v) {
-            for (Integer wnode : w) {
-                SAPHelper(vnode, wnode, result);
-                if (result[0] < length) {
+        for (Integer vNode : v) {
+            for (Integer wNode : w) {
+                if (vNode == null || wNode == null)
+                    throw new IllegalArgumentException("Arguments can't be null");
+                sapHelper(vNode, wNode, result);
+                if (result[0] < length || length < 0) {
                     length = result[0];
                     ances = result[1];
                 }
@@ -84,7 +92,7 @@ public class SAP {
         return ances;
     }
 
-    private void SAPHelper(int v, int w, int[] result) {
+    private void sapHelper(int v, int w, int[] result) {
         if (result.length != 2) throw new RuntimeException("I only need integer array with 2 elements.");
         if (v < 0 || v >= G.V() || w < 0 || w >= G.V())
             throw new IllegalArgumentException("Index out of bounds");
@@ -99,8 +107,8 @@ public class SAP {
         wQueue.enqueue(w);
         int vTemp = -1;
         int wTemp = -1;
-        int length = Integer.MAX_VALUE;
-        int ances = G.V();
+        int length = -1;
+        int ances = -1;
 
         while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
             if (!vQueue.isEmpty()) {
@@ -126,14 +134,14 @@ public class SAP {
             int tmpL;
             if (wMarked[vTemp]) {
                 tmpL = vdistTo[vTemp] + wdistTo[vTemp];
-                if (tmpL < length) {
+                if (tmpL < length || length < 0) {
                     length = tmpL;
                     ances = vTemp;
                 }
             }
             if (vMarked[wTemp]) {
                 tmpL = vdistTo[wTemp] + wdistTo[wTemp];
-                if (tmpL < length) {
+                if (tmpL < length || length < 0) {
                     length = tmpL;
                     ances = wTemp;
                 }
