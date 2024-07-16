@@ -8,33 +8,80 @@ import edu.princeton.cs.algs4.StdOut;
 public class SAP {
 
     private final Digraph G;
-    private boolean[] vMarked;
-    private boolean[] wMarked;
-    private int[] vdistTo;
-    private int[] wdistTo;
+    private final boolean[] vMarked;
+    private final boolean[] wMarked;
+    private final int[] vdistTo;
+    private final int[] wdistTo;
+    private Queue<Integer> vQueue;
+    private Queue<Integer> wQueue;
 
     // constructor takes a digraph (not necessarily a DAG)
     public SAP(Digraph G) {
         if (G == null) throw new IllegalArgumentException("argument is null");
-        this.G = G;
-        initializeArray();
-    }
-
-    private void initializeArray() {
+        this.G = new Digraph(G);
         vMarked = new boolean[G.V()];
         wMarked = new boolean[G.V()];
         vdistTo = new int[G.V()];
         wdistTo = new int[G.V()];
+        initializeArray();
+    }
+
+    private void initializeArray() {
         for (int i = 0; i < G.V(); i++) {
+            vMarked[i] = false;
+            wMarked[i] = false;
             vdistTo[i] = Integer.MAX_VALUE;
             wdistTo[i] = Integer.MAX_VALUE;
         }
     }
 
+    private void initializeWithArgument(int v, int w) {
+        argCheck(v);
+        argCheck(w);
+        initializeArray();
+        vQueue = new Queue<>();
+        wQueue = new Queue<>();
+
+        vInitialize(v);
+        wInitialize(w);
+    }
+
+    private void initializeWithArgument(Iterable<Integer> v, Iterable<Integer> w) {
+        initializeArray();
+        vQueue = new Queue<>();
+        wQueue = new Queue<>();
+        for (Integer vNode : v) {
+            argCheck(vNode);
+            vInitialize(vNode);
+        }
+        for (Integer wNode : w) {
+            argCheck(wNode);
+            wInitialize(wNode);
+        }
+    }
+
+    private void argCheck(Integer node) {
+        if (node == null || node < 0 || node >= G.V())
+            throw new IllegalArgumentException("Invalid node number");
+    }
+
+    private void vInitialize(Integer vNode) {
+        vMarked[vNode] = true;
+        vdistTo[vNode] = 0;
+        vQueue.enqueue(vNode);
+    }
+
+    private void wInitialize(Integer wNode) {
+        wMarked[wNode] = true;
+        wdistTo[wNode] = 0;
+        wQueue.enqueue(wNode);
+    }
+
     // length of shortest ancestral path between v and w; -1 if no such path.
     public int length(int v, int w) {
+        initializeWithArgument(v, w);
         int[] result = new int[2];
-        sapHelper(v, w, result);
+        sapHelper(result);
         return result[0];
     }
 
@@ -42,8 +89,9 @@ public class SAP {
      * -1 if no such path
      */
     public int ancestor(int v, int w) {
+        initializeWithArgument(v, w);
         int[] result = new int[2];
-        sapHelper(v, w, result);
+        sapHelper(result);
         return result[1];
     }
 
@@ -53,19 +101,10 @@ public class SAP {
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
         if (v == null || w == null)
             throw new IllegalArgumentException("Arguments can't be null");
-        int length = -1;
+        initializeWithArgument(v, w);
         int[] result = new int[2];
-        for (Integer vNode : v) {
-            for (Integer wNode : w) {
-                if (vNode == null || wNode == null)
-                    throw new IllegalArgumentException("Arguments can't be null");
-                sapHelper(vNode, wNode, result);
-                if (result[0] < length || length < 0) {
-                    length = result[0];
-                }
-            }
-        }
-        return length;
+        sapHelper(result);
+        return result[0];
     }
 
     /* a common ancestor that participates in shortest ancestral path;
@@ -74,37 +113,14 @@ public class SAP {
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
         if (v == null || w == null)
             throw new IllegalArgumentException("Arguments can't be null");
-        int length = -1;
-        int ances = -1;
+        initializeWithArgument(v, w);
         int[] result = new int[2];
-
-        for (Integer vNode : v) {
-            for (Integer wNode : w) {
-                if (vNode == null || wNode == null)
-                    throw new IllegalArgumentException("Arguments can't be null");
-                sapHelper(vNode, wNode, result);
-                if (result[0] < length || length < 0) {
-                    length = result[0];
-                    ances = result[1];
-                }
-            }
-        }
-        return ances;
+        sapHelper(result);
+        return result[1];
     }
 
-    private void sapHelper(int v, int w, int[] result) {
+    private void sapHelper(int[] result) {
         if (result.length != 2) throw new RuntimeException("I only need integer array with 2 elements.");
-        if (v < 0 || v >= G.V() || w < 0 || w >= G.V())
-            throw new IllegalArgumentException("Index out of bounds");
-        Queue<Integer> vQueue = new Queue<>();
-        Queue<Integer> wQueue = new Queue<>();
-        initializeArray();
-        vdistTo[v] = 0;
-        wdistTo[w] = 0;
-        vMarked[v] = true;
-        wMarked[w] = true;
-        vQueue.enqueue(v);
-        wQueue.enqueue(w);
         int vTemp = -1;
         int wTemp = -1;
         int length = -1;

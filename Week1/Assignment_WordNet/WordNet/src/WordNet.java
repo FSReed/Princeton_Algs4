@@ -42,14 +42,22 @@ public class WordNet {
         Digraph g = new Digraph(verticeNum);
 
         In hyp = new In(hypernyms);
+        int currentPlace = 0;
+        int rootNum = 0;
         while (!hyp.isEmpty()) {
             String content = hyp.readLine();
             String[] element = content.split(",");
             int v = Integer.parseInt(element[0]);
+            if (v > currentPlace) {
+                rootNum += 1;
+                if (rootNum > 1)
+                    throw new IllegalArgumentException("Only a single root is needed");
+            }
             for (int p = 1; p < element.length; p++) {
                 int m = Integer.parseInt(element[p]);
                 g.addEdge(v, m);
             }
+            currentPlace++;
         }
 
         DirectedCycle gcycle = new DirectedCycle(g);
