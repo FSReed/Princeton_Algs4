@@ -1,8 +1,9 @@
-import edu.princeton.cs.algs4.Digraph;
-import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.RedBlackBST;
-import edu.princeton.cs.algs4.LinkedBag;
+import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.DirectedCycle;
+import edu.princeton.cs.algs4.LinkedBag;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdOut;
 
 public class WordNet {
 
@@ -48,16 +49,23 @@ public class WordNet {
             String content = hyp.readLine();
             String[] element = content.split(",");
             int v = Integer.parseInt(element[0]);
-            if (v > currentPlace) {
+            while (v > currentPlace) {
                 rootNum += 1;
                 if (rootNum > 1)
                     throw new IllegalArgumentException("Only a single root is needed");
+                currentPlace += 1;
             }
             for (int p = 1; p < element.length; p++) {
                 int m = Integer.parseInt(element[p]);
                 g.addEdge(v, m);
             }
             currentPlace++;
+        }
+        while (currentPlace < verticeNum) {
+            rootNum += 1;
+            if (rootNum > 1)
+                throw new IllegalArgumentException("Only a single root is needed");
+            currentPlace += 1;
         }
 
         DirectedCycle gcycle = new DirectedCycle(g);
@@ -94,8 +102,8 @@ public class WordNet {
     }
 
     public static void main(String[] args) {
-        WordNet wordnet = new WordNet("synsets.txt", "hypernyms.txt");
-        int length = wordnet.distance("horse", "cat");
-        System.out.println(length);
+        WordNet wordnet = new WordNet(args[0], args[1]);
+        int length = wordnet.distance("Europe", "cat");
+        StdOut.printf("Distance is %d\n", length);
     }
 }
