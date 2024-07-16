@@ -10,7 +10,7 @@ public class Outcast {
 
     public String outcast(String[] nouns) {
         int length;
-        int maxLength = Integer.MAX_VALUE;
+        int maxLength = -1;
         String result = "No result";
 
         for (String noun : nouns) {
@@ -21,7 +21,7 @@ public class Outcast {
 //                StdOut.printf("%s to %s: %d\n", noun, anotherNoun, current);
             }
 //            StdOut.printf("Prev Max: %d. And now: %d\n", maxLength, length);
-            if (length < maxLength) {
+            if (length > maxLength) {
                 maxLength = length;
                 result = noun;
             }
