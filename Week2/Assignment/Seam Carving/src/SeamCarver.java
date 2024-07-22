@@ -133,11 +133,11 @@ public class SeamCarver {
 
     // Check the validation of the index in the array
     private void checkValidate(int[] seam, int index, boolean isHorizontal) {
-        int elementSize = isHorizontal ? pic.height() : pic.width();
-        if (seam[index] < 0 || seam[index] >= elementSize)
+        int seamLength = isHorizontal ? pic.width() : pic.height();
+        if (seam[index] < 0 || seam[index] >= seamLength)
             throw new IllegalArgumentException("Index out of bounds");
         for (int child = index - 1; child <= index + 1; child += 2) {
-            if (child < 0 || child >= elementSize) continue;
+            if (child < 0 || child >= seamLength) continue;
             if (Math.abs(seam[child] - seam[index]) > 1)
                 throw new IllegalArgumentException("Invalid seam");
         }
@@ -165,7 +165,7 @@ public class SeamCarver {
     }
 
     // remove vertical seam from current picture
-    private void removeVerticalSeam(int[] seam) {
+    public void removeVerticalSeam(int[] seam) {
         if (pic.width() == 1)
             throw new IllegalArgumentException("Can't remove more vertical pixels");
         if (seam == null)
@@ -192,7 +192,7 @@ public class SeamCarver {
         try {
             pic.show();
             Thread.sleep(gapTime);
-            pic.hide();
+//            pic.hide();
         } catch (InterruptedException e) {
             System.out.println("Something went wrong");
         }
@@ -205,7 +205,7 @@ public class SeamCarver {
         try {
             pic.show();
             Thread.sleep(gapTime);
-            pic.hide();
+//            pic.hide();
         } catch (InterruptedException e) {
             System.out.println("Something went wrong");
         }
@@ -215,7 +215,7 @@ public class SeamCarver {
         SeamCarver carver = new SeamCarver(test);
         for (int i = 0; i < 200; i++) {
             int[] result = carver.findHorizontalSeam();
-            carver.showHorizontalPath(result, 1000);
+//            carver.showHorizontalPath(result, 1000);
             carver.removeHorizontalSeam(result);
         }
         carver.picture().show();
