@@ -7,6 +7,8 @@ public class SeamCarver {
     private Picture pic;
 
     public SeamCarver(Picture picture) {
+        if (picture == null)
+            throw new IllegalArgumentException("Argument can't be null");
         pic = picture;
     }
 
@@ -51,6 +53,8 @@ public class SeamCarver {
 
     // energy of pixel at column x and row y
     public double energy(int x, int y) {
+        if (x < 0 || x >= pic.width() || y < 0 || y >= pic.height())
+            throw new IllegalArgumentException("Index out of bounds");
         if (onBorder(x, y)) {
             return 1000.0;
         } else {
@@ -127,10 +131,29 @@ public class SeamCarver {
         return findSeam(false);
     }
 
+    // Check the validation of the index in the array
+    private void checkValidate(int[] seam, int index, boolean isHorizontal) {
+        int elementSize = isHorizontal ? pic.height() : pic.width();
+        if (seam[index] < 0 || seam[index] >= elementSize)
+            throw new IllegalArgumentException("Index out of bounds");
+        for (int child = index - 1; child <= index + 1; child += 2) {
+            if (child < 0 || child >= elementSize) continue;
+            if (Math.abs(seam[child] - seam[index]) > 1)
+                throw new IllegalArgumentException("Invalid seam");
+        }
+    }
+
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
+        if (pic.height() == 1)
+            throw new IllegalArgumentException("Can't remove more horizontal pixels");
+        if (seam == null)
+            throw new IllegalArgumentException("Argument can't be null");
+        if (seam.length != pic.width())
+            throw new IllegalArgumentException("Wrong array length");
         Picture newPic = new Picture(pic.width(), pic.height() - 1);
         for (int width = 0; width < pic.width(); width++) {
+            checkValidate(seam, width, true);
             int position = seam[width];
             for (int row = 0; row < position; row++)
                 newPic.setRGB(width, row, pic.getRGB(width, row));
@@ -143,8 +166,15 @@ public class SeamCarver {
 
     // remove vertical seam from current picture
     private void removeVerticalSeam(int[] seam) {
+        if (pic.width() == 1)
+            throw new IllegalArgumentException("Can't remove more vertical pixels");
+        if (seam == null)
+            throw new IllegalArgumentException("Argument can't be null");
+        if (seam.length != pic.height())
+            throw new IllegalArgumentException("Wrong array length");
         Picture newPic = new Picture(pic.width() - 1, pic.height());
         for (int row = 0; row < pic.height(); row++) {
+            checkValidate(seam, row, false);
             int position = seam[row];
             for (int i = 0; i < position; i++)
                 newPic.setRGB(i, row, pic.getRGB(i, row));
