@@ -133,8 +133,9 @@ public class SeamCarver {
 
     // Check the validation of the index in the array
     private void checkValidate(int[] seam, int index, boolean isHorizontal) {
+        int elementSize = isHorizontal ? pic.height() : pic.width();
         int seamLength = isHorizontal ? pic.width() : pic.height();
-        if (seam[index] < 0 || seam[index] >= seamLength)
+        if (seam[index] < 0 || seam[index] >= elementSize)
             throw new IllegalArgumentException("Index out of bounds");
         for (int child = index - 1; child <= index + 1; child += 2) {
             if (child < 0 || child >= seamLength) continue;
@@ -185,38 +186,39 @@ public class SeamCarver {
         pic = newPic;
     }
 
-    private void showVerticalPath(int[] seam, int gapTime) {
-        for (int h = 0; h < pic.height(); h++) {
-            pic.setRGB(seam[h], h, (0xff << 24) + (0xff << 16));
-        }
-        try {
-            pic.show();
-            Thread.sleep(gapTime);
+//    private void showVerticalPath(int[] seam, int gapTime) {
+//        for (int h = 0; h < pic.height(); h++) {
+//            pic.setRGB(seam[h], h, (0xff << 24) + (0xff << 16));
+//        }
+//        try {
+//            pic.show();
+//            Thread.sleep(gapTime);
 //            pic.hide();
-        } catch (InterruptedException e) {
-            System.out.println("Something went wrong");
-        }
-    }
+//        } catch (InterruptedException e) {
+//            System.out.println("Something went wrong");
+//        }
+//    }
+//
+//    private void showHorizontalPath(int[] seam, int gapTime) {
+//        for (int w = 0; w < pic.width(); w++) {
+//            pic.setRGB(w, seam[w], (0xff << 24) + (0xff << 16));
+//        }
+//        try {
+//            pic.show();
+//            Thread.sleep(gapTime);
+//            pic.hide();
+//        } catch (InterruptedException e) {
+//            System.out.println("Something went wrong");
+//        }
+//    }
 
-    private void showHorizontalPath(int[] seam, int gapTime) {
-        for (int w = 0; w < pic.width(); w++) {
-            pic.setRGB(w, seam[w], (0xff << 24) + (0xff << 16));
-        }
-        try {
-            pic.show();
-            Thread.sleep(gapTime);
-//            pic.hide();
-        } catch (InterruptedException e) {
-            System.out.println("Something went wrong");
-        }
-    }
     public static void main(String[] args) {
         Picture test = new Picture(args[0]);
         SeamCarver carver = new SeamCarver(test);
         for (int i = 0; i < 200; i++) {
-            int[] result = carver.findHorizontalSeam();
-//            carver.showHorizontalPath(result, 1000);
-            carver.removeHorizontalSeam(result);
+            int[] result = carver.findVerticalSeam();
+//            carver.showVerticalPath(result, 1000);
+            carver.removeVerticalSeam(result);
         }
         carver.picture().show();
     }
