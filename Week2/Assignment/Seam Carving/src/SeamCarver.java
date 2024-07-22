@@ -9,12 +9,12 @@ public class SeamCarver {
     public SeamCarver(Picture picture) {
         if (picture == null)
             throw new IllegalArgumentException("Argument can't be null");
-        pic = picture;
+        pic = new Picture(picture);
     }
 
     // current picture
     public Picture picture() {
-        return pic;
+        return new Picture(pic);
     }
 
     // width of current picture
