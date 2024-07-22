@@ -127,11 +127,6 @@ public class SeamCarver {
         return findSeam(false);
     }
 
-    // Helper function
-    private void removeSeam(boolean isHorizontal) {
-
-    }
-
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
         Picture newPic = new Picture(pic.width(), pic.height() - 1);
