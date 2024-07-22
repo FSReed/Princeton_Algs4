@@ -88,7 +88,7 @@ public class SeamCarver {
             currentQueue = new IndexMinPQ<>(elementSize);
             updatedDistTo = new double[elementSize];
 
-            while (totalMark < elementSize - 1) {
+            while (totalMark < elementSize) {
                 int key = prevQueue.delMin();
                 for (int child = key - 1; child < key + 2; child++) {
                     if (child < 0 || child >= elementSize) continue;
