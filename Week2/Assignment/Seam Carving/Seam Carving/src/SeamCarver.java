@@ -60,69 +60,94 @@ public class SeamCarver {
         }
     }
 
+    // Helper function
+    private int[] findSeam(boolean isHorizontal) {
+        int resultSize = isHorizontal ? pic.width() : pic.height();
+        int elementSize = isHorizontal ? pic.height() : pic.width();
+
+        int[] result = new int[resultSize];
+
+        int totalMark;
+        boolean[] marked;
+        double[] distTo = new double[elementSize];
+        double[] updatedDistTo;
+        int[][] edgeTo = new int[resultSize][elementSize];
+        IndexMinPQ<Double> prevQueue = new IndexMinPQ<>(elementSize);
+        IndexMinPQ<Double> currentQueue;
+
+
+        for (int i = 0; i < elementSize; i++) {
+            distTo[i] = getEnergy(i, 0, isHorizontal);
+            prevQueue.insert(i, distTo[i]);
+        }
+
+        for (int i = 1; i < resultSize; i++) {
+
+            marked = new boolean[elementSize];
+            totalMark = 0;
+            currentQueue = new IndexMinPQ<>(elementSize);
+            updatedDistTo = new double[elementSize];
+
+            while (totalMark < elementSize - 1) {
+                int key = prevQueue.delMin();
+                for (int child = key - 1; child < key + 2; child++) {
+                    if (child < 0 || child >= elementSize) continue;
+                    if (marked[child]) continue;
+                    updatedDistTo[child] = getEnergy(child, i, isHorizontal) + distTo[key];
+                    marked[child] = true;
+                    totalMark += 1;
+                    currentQueue.insert(child, updatedDistTo[child]);
+                    edgeTo[i][child] = key;
+                }
+            }
+            prevQueue = currentQueue;
+            distTo = updatedDistTo;
+        }
+
+        int resultKey = prevQueue.delMin();
+        result[resultSize - 1] = resultKey;
+        for (int h = resultSize - 2; h >= 0; h--) {
+            result[h] = edgeTo[h + 1][result[h + 1]];
+        }
+        return result;
+    }
+
+    private double getEnergy(int elementWise, int resultWise, boolean isHorizontal) {
+        if (isHorizontal) return energy(resultWise, elementWise);
+        else return energy(elementWise, resultWise);
+    }
+
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        return null;
+        return findSeam(true);
     }
 
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
-       int[] result = new int[pic.height()];
+        return findSeam(false);
+    }
 
-       int totalMark;
-       boolean[] marked;
-       double[] distTo = new double[pic.width()];
-       double[] updatedDistTo;
-       int[][] edgeTo = new int[pic.height()][pic.width()];
-       IndexMinPQ<Double> prevQueue = new IndexMinPQ<>(pic.width());
-       IndexMinPQ<Double> currentQueue;
+    // Helper function
+    private void removeSeam(boolean isHorizontal) {
 
-
-       for (int w = 0; w < pic.width(); w++) {
-           distTo[w] = energy(0, w);
-           prevQueue.insert(w, distTo[w]);
-           for (int h = 0; h < pic.height(); h++) {
-               edgeTo[h][w] = -1;
-           }
-       }
-       for (int h = 1; h < pic.height(); h++) {
-
-           marked = new boolean[pic.width()];
-           totalMark = 0;
-           currentQueue = new IndexMinPQ<>(pic.width());
-           updatedDistTo = new double[pic.width()];
-
-           while (totalMark < pic.width() - 1) {
-               int key = prevQueue.delMin();
-               for (int child = key - 1; child < key + 2; child++) {
-                   if (child < 0 || child >= pic.width()) continue;
-                   if (marked[child]) continue;
-                   updatedDistTo[child] = energy(child, h) + distTo[key];
-                   marked[child] = true;
-                   totalMark += 1;
-                   currentQueue.insert(child, updatedDistTo[child]);
-                   edgeTo[h][child] = key;
-               }
-           }
-           prevQueue = currentQueue;
-           distTo = updatedDistTo;
-       }
-
-       int resultKey = prevQueue.delMin();
-       result[pic.height() - 1] = resultKey;
-       for (int h = pic.height() - 2; h >= 0; h--) {
-           result[h] = edgeTo[h + 1][result[h + 1]];
-       }
-       return result;
     }
 
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
-
+        Picture newPic = new Picture(pic.width(), pic.height() - 1);
+        for (int width = 0; width < pic.width(); width++) {
+            int position = seam[width];
+            for (int row = 0; row < position; row++)
+                newPic.setRGB(width, row, pic.getRGB(width, row));
+            for (; position < pic.height() - 1; position++) {
+                newPic.setRGB(width, position, pic.getRGB(width, position + 1));
+            }
+        }
+        pic = newPic;
     }
 
     // remove vertical seam from current picture
-    public void removeVerticalSeam(int[] seam) {
+    private void removeVerticalSeam(int[] seam) {
         Picture newPic = new Picture(pic.width() - 1, pic.height());
         for (int row = 0; row < pic.height(); row++) {
             int position = seam[row];
@@ -148,13 +173,25 @@ public class SeamCarver {
         }
     }
 
+    private void showHorizontalPath(int[] seam, int gapTime) {
+        for (int w = 0; w < pic.width(); w++) {
+            pic.setRGB(w, seam[w], (0xff << 24) + (0xff << 16));
+        }
+        try {
+            pic.show();
+            Thread.sleep(gapTime);
+            pic.hide();
+        } catch (InterruptedException e) {
+            System.out.println("Something went wrong");
+        }
+    }
     public static void main(String[] args) {
         Picture test = new Picture(args[0]);
         SeamCarver carver = new SeamCarver(test);
         for (int i = 0; i < 200; i++) {
-            int[] result = carver.findVerticalSeam();
-//            carver.showVerticalPath(result, 1000);
-            carver.removeVerticalSeam(result);
+            int[] result = carver.findHorizontalSeam();
+            carver.showHorizontalPath(result, 1000);
+            carver.removeHorizontalSeam(result);
         }
         carver.picture().show();
     }
