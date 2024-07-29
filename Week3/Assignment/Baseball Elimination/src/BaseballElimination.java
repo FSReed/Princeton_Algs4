@@ -1,6 +1,8 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.BST;
+import edu.princeton.cs.algs4.FlowEdge;
+import edu.princeton.cs.algs4.FlowNetwork;
 
 public class BaseballElimination {
 
@@ -8,6 +10,9 @@ public class BaseballElimination {
     private final TeamInfo[] teamsInfo;
     private final BST<String, Integer> teamIndex;
     private final int[][] gamesInfo;
+    private final int teamVertexInit;
+    private final int teamVertexEnd;
+    private final int destVertex;
 
     public BaseballElimination(String filename) {
         In inputStream = new In(filename);
@@ -15,6 +20,17 @@ public class BaseballElimination {
         teamsInfo = new TeamInfo[teamNumber];
         teamIndex = new BST<>();
         gamesInfo = new int[teamNumber][teamNumber];
+
+        /* Create an empty flow network
+         * The vertices represents:
+         * [0]: s
+         * [1] -> [n * (n - 1) / 2]: Games
+         * [n * (n - 1) / 2 + 1] -> [n * (n + 1) / 2]: Teams;
+         * n * (n + 1) / 2 + 1: t
+         */
+        teamVertexInit = teamNumber * (teamNumber - 1) / 2 + 1;
+        teamVertexEnd = teamNumber * (teamNumber + 1) / 2;
+        destVertex = teamVertexEnd + 1;
 
         int currentTeam = 0;
         while (!inputStream.isEmpty()) {
@@ -30,8 +46,8 @@ public class BaseballElimination {
             }
             currentTeam += 1;
         }
-
     }
+
 
     public int numberOfTeams() {
         return teamNumber;
@@ -42,21 +58,38 @@ public class BaseballElimination {
     }
 
     public int wins(String team) {
+        checkTeam(team);
         return teamsInfo[teamIndex.get(team)].wins;
     }
 
     public int losses(String team) {
-        return teamsInfo[teamIndex.get(team)].wins;
+        checkTeam(team);
+        return teamsInfo[teamIndex.get(team)].losses;
     }
 
     public int remaining(String team) {
-        return teamsInfo[teamIndex.get(team)].wins;
+        checkTeam(team);
+        return teamsInfo[teamIndex.get(team)].remaining;
     }
 
     public int against(String team1, String team2) {
+        checkTeam(team1);
+        checkTeam(team2);
         return gamesInfo[teamIndex.get(team1)][teamIndex.get(team2)];
     }
+
+
     public boolean isEliminated(String team) {
+        checkTeam(team);
+
+        // First, do some simple check
+        for (String currentTeam: teams()) {
+            int currentIndex = teamIndex.get(currentTeam) + teamVertexInit;
+            if (wins(team) + remaining(team) - wins(currentTeam) < 0)
+                return true;
+        }
+
+        FlowNetwork net = initializeNet(team);
         return false;
     }
 
@@ -69,6 +102,41 @@ public class BaseballElimination {
         int wins;
         int losses;
         int remaining;
+    }
+
+    private FlowNetwork initializeNet(String team) {
+        FlowNetwork result = new FlowNetwork(teamNumber * (teamNumber + 1) / 2 + 2);
+        for (int t = 0; t < teamNumber - 1; t++) {
+            for (int opponent = t + 1; opponent < teamNumber; opponent += 1) {
+                /* Pure math computation
+                 * Get the index in the graph that represents the game between t and opponent
+                 */
+                int gameIndex = (t * teamNumber) - t * (t + 1) / 2 + opponent;
+                FlowEdge fromSource = new FlowEdge(0, gameIndex, gamesInfo[t][opponent]);
+
+                // Add two edges from game to team with infinite capacity.
+                FlowEdge toTeamV = new FlowEdge(gameIndex, t + teamVertexInit, Double.MAX_VALUE);
+                FlowEdge toTeamW = new FlowEdge(gameIndex, opponent + teamVertexInit, Double.MAX_VALUE);
+
+                result.addEdge(fromSource);
+                result.addEdge(toTeamV);
+                result.addEdge(toTeamW);
+            }
+        }
+
+        // Insert edges from team to destination vertex t
+        for (String currentTeam: teams()) {
+            int currentIndex = teamIndex.get(currentTeam) + teamVertexInit;
+            double capacity = wins(team) + remaining(team) - wins(currentTeam);
+            result.addEdge(new FlowEdge(currentIndex, destVertex, capacity));
+        }
+        return result;
+    }
+
+    // Check if the given team is valid
+    private void checkTeam(String team) {
+        if (team == null || !teamIndex.contains(team))
+            throw new IllegalArgumentException("Invalid team");
     }
 
     public static void main(String[] args) {
