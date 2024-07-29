@@ -3,6 +3,8 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.BST;
 import edu.princeton.cs.algs4.FlowEdge;
 import edu.princeton.cs.algs4.FlowNetwork;
+import edu.princeton.cs.algs4.FordFulkerson;
+import edu.princeton.cs.algs4.LinkedBag;
 
 public class BaseballElimination {
 
@@ -11,8 +13,8 @@ public class BaseballElimination {
     private final BST<String, Integer> teamIndex;
     private final int[][] gamesInfo;
     private final int teamVertexInit;
-    private final int teamVertexEnd;
     private final int destVertex;
+    private final int maxFlowFromSource;
 
     public BaseballElimination(String filename) {
         In inputStream = new In(filename);
@@ -29,8 +31,7 @@ public class BaseballElimination {
          * n * (n + 1) / 2 + 1: t
          */
         teamVertexInit = teamNumber * (teamNumber - 1) / 2 + 1;
-        teamVertexEnd = teamNumber * (teamNumber + 1) / 2;
-        destVertex = teamVertexEnd + 1;
+        destVertex = teamNumber * (teamNumber + 1) / 2 + 1;
 
         int currentTeam = 0;
         while (!inputStream.isEmpty()) {
@@ -46,6 +47,14 @@ public class BaseballElimination {
             }
             currentTeam += 1;
         }
+
+        int maxFlow = 0;
+        for (int t = 0; t < teamNumber - 1; t++) {
+            for (int opponent = t + 1; opponent < teamNumber; opponent += 1) {
+                maxFlow += gamesInfo[t][opponent];
+            }
+        }
+        maxFlowFromSource = maxFlow;
     }
 
 
@@ -90,11 +99,26 @@ public class BaseballElimination {
         }
 
         FlowNetwork net = initializeNet(team);
-        return false;
+        FordFulkerson maxFlow = new FordFulkerson(net, 0, destVertex);
+        return ((int) maxFlow.value()) == maxFlowFromSource;
     }
 
     public Iterable<String> certificateOfElimination(String team) {
-        return null;
+        checkTeam(team);
+
+        FlowNetwork net = initializeNet(team);
+        FordFulkerson maxFlow = new FordFulkerson(net, 0, destVertex);
+        LinkedBag<String> result = new LinkedBag<>();
+        for (String currentTeam : teams()) {
+            if (wins(team) + remaining(team) - wins(currentTeam) < 0) {
+                result.add(currentTeam);
+                continue;
+            }
+            if (maxFlow.inCut(teamIndex.get(currentTeam) + teamVertexInit))
+                result.add(currentTeam);
+        }
+
+        return result;
     }
 
     private class TeamInfo {
@@ -128,6 +152,7 @@ public class BaseballElimination {
         for (String currentTeam: teams()) {
             int currentIndex = teamIndex.get(currentTeam) + teamVertexInit;
             double capacity = wins(team) + remaining(team) - wins(currentTeam);
+            capacity = (capacity > 0) ? capacity : 0;
             result.addEdge(new FlowEdge(currentIndex, destVertex, capacity));
         }
         return result;
@@ -142,17 +167,16 @@ public class BaseballElimination {
     public static void main(String[] args) {
         BaseballElimination division = new BaseballElimination(args[0]);
         for (String team : division.teams()) {
-            StdOut.printf("Team: %s\n", team);
-//            if (division.isEliminated(team)) {
-//                StdOut.print(team + " is eliminated by the subset R = { ");
-//                for (String t : division.certificateOfElimination(team)) {
-//                    StdOut.print(t + " ");
-//                }
-//                StdOut.println("}");
-//            }
-//            else {
-//                StdOut.println(team + " is not eliminated");
-//            }
+            if (division.isEliminated(team)) {
+                StdOut.print(team + " is eliminated by the subset R = { ");
+                for (String t : division.certificateOfElimination(team)) {
+                    StdOut.print(t + " ");
+                }
+                StdOut.println("}");
+            }
+            else {
+                StdOut.println(team + " is not eliminated");
+            }
         }
     }
 }
