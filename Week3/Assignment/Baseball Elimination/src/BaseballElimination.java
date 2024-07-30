@@ -93,19 +93,20 @@ public class BaseballElimination {
 
         // First, do some simple check
         for (String currentTeam: teams()) {
-            int currentIndex = teamIndex.get(currentTeam) + teamVertexInit;
             if (wins(team) + remaining(team) - wins(currentTeam) < 0)
                 return true;
         }
 
         FlowNetwork net = initializeNet(team);
         FordFulkerson maxFlow = new FordFulkerson(net, 0, destVertex);
-        return ((int) maxFlow.value()) == maxFlowFromSource;
+        return ((int) maxFlow.value()) < maxFlowFromSource;
     }
 
     public Iterable<String> certificateOfElimination(String team) {
         checkTeam(team);
 
+        if (!isEliminated(team))
+            return null;
         FlowNetwork net = initializeNet(team);
         FordFulkerson maxFlow = new FordFulkerson(net, 0, destVertex);
         LinkedBag<String> result = new LinkedBag<>();
@@ -117,7 +118,6 @@ public class BaseballElimination {
             if (maxFlow.inCut(teamIndex.get(currentTeam) + teamVertexInit))
                 result.add(currentTeam);
         }
-
         return result;
     }
 
@@ -135,12 +135,12 @@ public class BaseballElimination {
                 /* Pure math computation
                  * Get the index in the graph that represents the game between t and opponent
                  */
-                int gameIndex = (t * teamNumber) - t * (t + 1) / 2 + opponent;
+                int gameIndex = (t * teamNumber) - t * (t + 1) / 2 + (opponent - t);
                 FlowEdge fromSource = new FlowEdge(0, gameIndex, gamesInfo[t][opponent]);
 
                 // Add two edges from game to team with infinite capacity.
-                FlowEdge toTeamV = new FlowEdge(gameIndex, t + teamVertexInit, Double.MAX_VALUE);
-                FlowEdge toTeamW = new FlowEdge(gameIndex, opponent + teamVertexInit, Double.MAX_VALUE);
+                FlowEdge toTeamV = new FlowEdge(gameIndex, t + teamVertexInit, Double.POSITIVE_INFINITY);
+                FlowEdge toTeamW = new FlowEdge(gameIndex, opponent + teamVertexInit, Double.POSITIVE_INFINITY);
 
                 result.addEdge(fromSource);
                 result.addEdge(toTeamV);
